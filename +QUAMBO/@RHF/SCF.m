@@ -8,7 +8,7 @@ inv_S_Half = eye(size(obj.overlapMat)) / sqrtm(obj.overlapMat);
 densVec = zeros(size(oeiVec));
 elecEnergy = 0;
 
-% diis ediis
+% diis adiis
 cdiis = QUAMBO.CDIIS(obj.overlapMat);
 adiis = QUAMBO.ADIIS(oeiVec);
 
