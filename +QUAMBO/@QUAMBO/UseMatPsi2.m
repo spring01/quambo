@@ -2,7 +2,7 @@ function properties = UseMatPsi2(molStr, basisSetAO, basisSetAOandAMBO)
 mpsi2AO = MatPsi2(molStr, basisSetAO);
 
 if(mpsi2AO.BasisSet_NumFunctions() > 150)
-    throw(MException('QUAMBO:PropertiesUsingMatPsi2','Too many basis functions.'));
+    throw(MException('QUAMBO:UseMatPsi2','Too many basis functions.'));
 end
 
 mpsi2AO.RHF_DoSCF();
