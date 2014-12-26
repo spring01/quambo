@@ -41,8 +41,8 @@ classdef QUAMBO < handle
             
             % maximize overlap
             projSigVirMOinVirMO = VirMOinSigVirMO * VirMOinSigVirMO';
-            sumSqMOinAMBO = sum(OccMOinAMBO.^2) ... % \sum{OccMO}{<OccMO|AMBO>^2}
-                + diag(VirMOinAMBO'*projSigVirMOinVirMO*VirMOinAMBO)'; % \sum{SigVirMO}{<AMBO|SigVirMO><SigVirMO|AMBO>}
+            sumSqMOinAMBO = sum(OccMOinAMBO.^2) ... % \sum_{OccMO}{<OccMO|AMBO>^2}
+                + diag(VirMOinAMBO'*projSigVirMOinVirMO*VirMOinAMBO)'; % \sum_{SigVirMO}{<AMBO|SigVirMO><SigVirMO|AMBO>}
             
             % calculate QUAMBOs
             OccMOinQUAMBO = repmat(sumSqMOinAMBO.^-0.5,numOccMOs,1) ...
