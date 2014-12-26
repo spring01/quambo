@@ -12,10 +12,10 @@ tensor4 = permute(reshape(tensor4, nbf2,nbf2,nbf1,nbf1), [2 1 3 4]);
 
 % ijrs -> ijks
 tensor4 = permute(tensor4,[1 2 4 3]);
-tensor4 = reshape(tensor4, [], nbf1) * trans;
+tensor4 = reshape(tensor4, [],nbf1) * trans;
 tensor4 = permute(reshape(tensor4, nbf2,nbf2,nbf1,nbf2), [1 2 4 3]);
 
 % ijks -> ijkl
-tensor4 = reshape(tensor4, [], nbf1) * trans;
+tensor4 = reshape(tensor4, [],nbf1) * trans;
 tensor4 = reshape(tensor4, nbf2,nbf2,nbf2,nbf2);
 end
