@@ -2,7 +2,7 @@ classdef QUAMBO < handle
     
     properties (SetAccess = private)
         
-        AOinQUAMBO;
+        AOtoQUAMBO;
         
         overlapQUAMBO;
         kineticQUAMBO;
@@ -14,56 +14,40 @@ classdef QUAMBO < handle
     methods
         
         function obj = QUAMBO(properties)
-            % Naming examples:
-            % <AO|MO> : AOinMO
-            % \sum_{MO}{<AO|MO><MO|AO>} : projMOinAO
-            %
-            % Diagonalize <AO|H|AO>, eigenkets are <AO|MO>
-            %
-            % MOinAO = AOinMO';
-            % projMOinAO = AOinMO * AOinMO';
-            
             % input section
             numOccMOs = properties.numElectrons / 2;
             numVirMOs = properties.numAOs - numOccMOs;
             numQUAMBOs = properties.numAMBOs;
-            AOinMO = properties.AOinMO;
-            AOinAMBO = properties.AOinAMBO;
+            AOtoMO = properties.AOtoMO;
+            AOandAMBO = properties.AOandAMBO;
             
-            % diagonalize \sum_{AMBO}{<VirMO|AMBO><AMBO|VirMO>}
-            % and take the significant virtual orbitals
-            OccMOinAMBO = AOinMO(:, 1:numOccMOs)'*AOinAMBO; % <OccMO|AMBO> = \sum_{AO}{<OccMO|AO><AO|AMBO>}
-            VirMOinAMBO = AOinMO(:, numOccMOs+1:end)'*AOinAMBO; % <VirMO|AMBO> = \sum_{AO}{<VirMO|AO><AO|AMBO>}
-            projAMBOinVirMO = VirMOinAMBO * VirMOinAMBO'; % projector \sum{|AMBO><AMBO|} in |VirMO>
-            [VirMOinWeightedVirMO, weights] = eig(projAMBOinVirMO);
+            % diagonalize \sum{|AMBO><AMBO|} in |VirMO> and take the significant virtual orbitals
+            OccMOtoAMBO = AOtoMO(:, 1:numOccMOs)'*AOandAMBO;
+            VirMOtoAMBO = AOtoMO(:, numOccMOs+1:end)'*AOandAMBO;
+            [VirMOtoWeightedVirMO, weights] = eig(VirMOtoAMBO*VirMOtoAMBO');
             [~, order] = sort(diag(weights), 'descend');
-            VirMOinSigVirMO = VirMOinWeightedVirMO(:, order(1:numQUAMBOs-numOccMOs));
+            VirMOtoSigVirMO = VirMOtoWeightedVirMO(:, order(1:numQUAMBOs-numOccMOs));
             
             % maximize overlap
-            projSigVirMOinVirMO = VirMOinSigVirMO * VirMOinSigVirMO';
-            sumSqMOinAMBO = sum(OccMOinAMBO.^2) ... % \sum_{OccMO}{<OccMO|AMBO>^2}
-                + diag(VirMOinAMBO'*projSigVirMOinVirMO*VirMOinAMBO)'; % \sum_{SigVirMO}{<AMBO|SigVirMO><SigVirMO|AMBO>}
+            SigVirMOtoAMBO = VirMOtoSigVirMO'*VirMOtoAMBO;
+            sumMOtoAMBOsq = sum([OccMOtoAMBO;SigVirMOtoAMBO].^2);
             
-            % calculate QUAMBOs
-            OccMOinQUAMBO = repmat(sumSqMOinAMBO.^-0.5,numOccMOs,1) ...
-                .* OccMOinAMBO; % <OccMO|QUAMBO>
-            VirMOinQUAMBO = repmat(sumSqMOinAMBO.^-0.5,numVirMOs,1) ...
-                .* (projSigVirMOinVirMO*VirMOinAMBO); % <VirMO|QUAMBO>
-            MOinQUAMBO = [OccMOinQUAMBO; VirMOinQUAMBO]; % <MO|QUAMBO>
+            % QUAMBOs
+            OccMOtoQUAMBO = repmat(sumMOtoAMBOsq.^-0.5,numOccMOs,1) .* OccMOtoAMBO;
+            VirMOtoQUAMBO = repmat(sumMOtoAMBOsq.^-0.5,numVirMOs,1) .* (VirMOtoSigVirMO*SigVirMOtoAMBO);
+            MOtoQUAMBO = [OccMOtoQUAMBO; VirMOtoQUAMBO];
+            obj.AOtoQUAMBO = AOtoMO * MOtoQUAMBO;
             
-            % <QUAMBO|QUAMBO> and <AO|QUAMBO>
-            obj.overlapQUAMBO = MOinQUAMBO' * MOinQUAMBO; % MOs are orthonormal
-            obj.AOinQUAMBO = AOinMO * MOinQUAMBO;
-            
-            % transform other integrals
-            obj.kineticQUAMBO = obj.AOinQUAMBO' * properties.kineticAO * obj.AOinQUAMBO;
-            potentialEachCoreAO = properties.potentialEachCoreAO;
-            obj.potentialEachCoreQUAMBO = zeros(numQUAMBOs,numQUAMBOs,size(potentialEachCoreAO, 3));
-            for iAtom = 1:size(potentialEachCoreAO, 3)
+            % integrals
+            obj.overlapQUAMBO = MOtoQUAMBO' * MOtoQUAMBO;
+            obj.kineticQUAMBO = obj.AOtoQUAMBO' * properties.kineticAO * obj.AOtoQUAMBO;
+            obj.potentialEachCoreQUAMBO = zeros(numQUAMBOs,numQUAMBOs,size(properties.potentialEachCoreAO, 3));
+            for iAtom = 1:size(properties.potentialEachCoreAO, 3)
                 obj.potentialEachCoreQUAMBO(:,:,iAtom) = ...
-                    obj.AOinQUAMBO' * potentialEachCoreAO(:,:,iAtom) * obj.AOinQUAMBO;
+                    obj.AOtoQUAMBO' * properties.potentialEachCoreAO(:,:,iAtom) * obj.AOtoQUAMBO;
             end
-            obj.twoElecIntegralsQUAMBO = QUAMBO.TransformTensor4(properties.twoElecIntegralsAO, obj.AOinQUAMBO);
+            obj.twoElecIntegralsQUAMBO = ...
+                QUAMBO.TransformTensor4(properties.twoElecIntegralsAO, obj.AOtoQUAMBO);
         end
         
     end
