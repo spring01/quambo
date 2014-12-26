@@ -9,6 +9,9 @@ classdef RHF < handle
         nuclearRepulsionEnergy;
         numElectrons;
         
+        finalFockMat;
+        finalDensMat;
+        
         hfEnergy;
         orbital;
         orbitalEnergies;

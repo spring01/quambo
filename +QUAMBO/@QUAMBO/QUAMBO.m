@@ -22,21 +22,21 @@ classdef QUAMBO < handle
             AOandAMBO = properties.AOandAMBO;
             
             % diagonalize \sum{|AMBO><AMBO|} in |VirMO> and take the significant virtual orbitals
-            OccMOtoAMBO = AOtoMO(:, 1:numOccMOs)'*AOandAMBO;
-            VirMOtoAMBO = AOtoMO(:, numOccMOs+1:end)'*AOandAMBO;
-            [VirMOtoWeightedVirMO, weights] = eig(VirMOtoAMBO*VirMOtoAMBO');
+            OccMOtoAMBO = AOtoMO(:, 1:numOccMOs)'*AOandAMBO; % <OccMO/AO><AO|AMBO> = <OccMO|AMBO> = <OccMO\AMBO>
+            VirMOtoAMBO = AOtoMO(:, numOccMOs+1:end)'*AOandAMBO; % <VirMO/AO><AO|AMBO> = <VirMO|AMBO> = <VirMO\AMBO>
+            [VirMOtoWeightedVirMO, weights] = eig(VirMOtoAMBO*VirMOtoAMBO'); % <VirMO|AMBO><AMBO|VirMO>
             [~, order] = sort(diag(weights), 'descend');
-            VirMOtoSigVirMO = VirMOtoWeightedVirMO(:, order(1:numQUAMBOs-numOccMOs));
+            VirMOtoSigVirMO = VirMOtoWeightedVirMO(:, order(1:numQUAMBOs-numOccMOs)); % <VirMO\SigVirMO>
             
             % maximize overlap
-            SigVirMOtoAMBO = VirMOtoSigVirMO'*VirMOtoAMBO;
+            SigVirMOtoAMBO = VirMOtoSigVirMO'*VirMOtoAMBO; % <SigVirMO/VirMO><VirMO|AMBO> = <SigVirMO|AMBO> = <SigVirMO\AMBO>
             sumMOtoAMBOsq = sum([OccMOtoAMBO;SigVirMOtoAMBO].^2);
             
             % QUAMBOs
-            OccMOtoQUAMBO = repmat(sumMOtoAMBOsq.^-0.5,numOccMOs,1) .* OccMOtoAMBO;
-            VirMOtoQUAMBO = repmat(sumMOtoAMBOsq.^-0.5,numVirMOs,1) .* (VirMOtoSigVirMO*SigVirMOtoAMBO);
+            OccMOtoQUAMBO = repmat(sumMOtoAMBOsq.^-0.5,numOccMOs,1) .* OccMOtoAMBO; % <OccMO\QUAMBO> ~ <OccMO\AMBO>
+            VirMOtoQUAMBO = repmat(sumMOtoAMBOsq.^-0.5,numVirMOs,1) .* (VirMOtoSigVirMO*SigVirMOtoAMBO); % <VirMO\QUAMBO> ~ <VirMO\SigVirMO><SigVirMO|AMBO>
             MOtoQUAMBO = [OccMOtoQUAMBO; VirMOtoQUAMBO];
-            obj.AOtoQUAMBO = AOtoMO * MOtoQUAMBO;
+            obj.AOtoQUAMBO = AOtoMO * MOtoQUAMBO; % <AO\MO><MO\QUAMBO> = <AO\QUAMBO>
             
             % integrals
             obj.overlapQUAMBO = MOtoQUAMBO' * MOtoQUAMBO;

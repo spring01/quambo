@@ -42,6 +42,9 @@ for iter = 1:obj.maxSCFIter
 end
 hfEnergy = elecEnergy + obj.nuclearRepulsionEnergy;
 
+obj.finalFockMat = reshape(fockSimVec, sqrt(length(fockSimVec)), []);
+obj.finalDensMat = reshape(densVec, sqrt(length(densVec)), []);
+
 obj.hfEnergy = hfEnergy;
 obj.orbital = orbital;
 obj.orbitalEnergies = orbitalEnergies;

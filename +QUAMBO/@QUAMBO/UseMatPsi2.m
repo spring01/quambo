@@ -1,29 +1,29 @@
 function properties = UseMatPsi2(molStr, basisSetAO, basisSetAOandAMBO)
-mpsi2AO = MatPsi2(molStr, basisSetAO);
+matpsi2AO = MatPsi2(molStr, basisSetAO);
 
-if(mpsi2AO.BasisSet_NumFunctions() > 150)
+if(matpsi2AO.BasisSet_NumFunctions() > 150)
     throw(MException('QUAMBO:UseMatPsi2','Too many basis functions.'));
 end
 
-mpsi2AO.RHF_DoSCF();
-mpsi2AOandAMBO = MatPsi2(molStr, basisSetAOandAMBO, 0, 1, [pwd, '/+QUAMBO']);
+matpsi2AO.RHF_DoSCF();
+matpsi2AOandAMBO = MatPsi2(molStr, basisSetAOandAMBO, 0, 1, [pwd, '/+QUAMBO']);
 
-properties.numElectrons = mpsi2AO.Molecule_NumElectrons();
-properties.numAOs = mpsi2AO.BasisSet_NumFunctions();
-properties.numAMBOs = mpsi2AOandAMBO.BasisSet_NumFunctions() - properties.numAOs;
-properties.AOtoMO = mpsi2AO.RHF_Orbital();
+properties.numElectrons = matpsi2AO.Molecule_NumElectrons();
+properties.numAOs = matpsi2AO.BasisSet_NumFunctions();
+properties.numAMBOs = matpsi2AOandAMBO.BasisSet_NumFunctions() - properties.numAOs;
+properties.AOtoMO = matpsi2AO.RHF_Orbital();
 
-atomicNumbers = mpsi2AO.Molecule_AtomicNumbers();
-centerNumFunctionsAO = CenterNumFunctions(atomicNumbers, mpsi2AO.BasisSet_FunctionToCenter());
-centerNumFunctionsAMBO = CenterNumFunctions(atomicNumbers, mpsi2AOandAMBO.BasisSet_FunctionToCenter()) ...
+atomicNumbers = matpsi2AO.Molecule_AtomicNumbers();
+centerNumFunctionsAO = CenterNumFunctions(atomicNumbers, matpsi2AO.BasisSet_FunctionToCenter());
+centerNumFunctionsAMBO = CenterNumFunctions(atomicNumbers, matpsi2AOandAMBO.BasisSet_FunctionToCenter()) ...
     - centerNumFunctionsAO;
 [indAOs, indAMBOs] = RangeAOandAMBO(atomicNumbers, centerNumFunctionsAO, centerNumFunctionsAMBO);
-overlapAOandAMBO = mpsi2AOandAMBO.Integrals_Overlap();
+overlapAOandAMBO = matpsi2AOandAMBO.Integrals_Overlap();
 properties.AOandAMBO = overlapAOandAMBO(indAOs, indAMBOs);
 
-properties.kineticAO = mpsi2AO.Integrals_Kinetic();
-properties.potentialEachCoreAO = mpsi2AO.Integrals_PotentialEachCore();
-properties.twoElecIntegralsAO = mpsi2AO.Integrals_AllTEIs();
+properties.kineticAO = matpsi2AO.Integrals_Kinetic();
+properties.potentialEachCoreAO = matpsi2AO.Integrals_PotentialEachCore();
+properties.twoElecIntegralsAO = matpsi2AO.Integrals_AllTEIs();
 end
 
 function centerNumFunctions = CenterNumFunctions(atomicNumbers, funcToCenter)
