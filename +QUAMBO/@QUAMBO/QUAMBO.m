@@ -74,10 +74,4 @@ classdef QUAMBO < handle
         
     end
     
-    methods (Access = private)
-        
-        tensor4 = TransformTensor4(~, tensor4, trans);
-        
-    end
-    
 end
