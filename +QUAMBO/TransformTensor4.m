@@ -1,6 +1,6 @@
 function tensor4 = TransformTensor4(tensor4, trans)
 nbf1 = size(trans, 1);
-nbf2 = size(trans,2);
+nbf2 = size(trans, 2);
 
 % pqrs -> iqrs
 tensor4 = reshape(trans' * reshape(tensor4, nbf1,[]), nbf2,nbf1,nbf1,nbf1);
