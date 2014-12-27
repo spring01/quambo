@@ -5,7 +5,7 @@ teiForExchange = reshape(permute(obj.twoElecIntegrals, [1 3 2 4]), ...
     length(oeiVec), []);
 inv_S_Half = eye(size(obj.overlapMat)) / sqrtm(obj.overlapMat);
 
-densVec = zeros(size(oeiVec));
+densKernelVec = zeros(size(oeiVec));
 elecEnergy = 0;
 
 % diis adiis
@@ -15,25 +15,25 @@ adiis = QUAMBO.ADIIS(oeiVec);
 fockVec = oeiVec;
 fockSimVec = fockVec;
 for iter = 1:obj.maxSCFIter
-    oldDensVec = densVec;
+    oldDensVec = densKernelVec;
     oldElecEnergy = elecEnergy;
-    [densVec, elecEnergy, orbital, orbitalEnergies] ...
+    [densKernelVec, elecEnergy, orbital, orbitalEnergies] ...
         = DiagonalizeFock(reshape(fockSimVec, sqrt(length(fockSimVec)), []), ...
         inv_S_Half, obj.numElectrons);
-    elecEnergy = oeiVec'*densVec + elecEnergy;
+    elecEnergy = oeiVec'*densKernelVec + elecEnergy;
     
-    if(sqrt(mean((densVec - oldDensVec).^2)) < obj.RMSDensityThreshold ...
-            && max(abs(densVec - oldDensVec)) < obj.MaxDensityThreshold ...
+    if(sqrt(mean((densKernelVec - oldDensVec).^2)) < obj.RMSDensityThreshold ...
+            && max(abs(densKernelVec - oldDensVec)) < obj.MaxDensityThreshold ...
             && abs(elecEnergy - oldElecEnergy) < obj.EnergyThreshold)
         break;
     end
     fockVec = oeiVec + ... % H
-        2 .* (teiForCoulomb * densVec) ... % + 2J
-        - (teiForExchange * densVec); ... % - K
+        2 .* (teiForCoulomb * densKernelVec) ... % + 2J
+        - (teiForExchange * densKernelVec); ... % - K
         
     % diis extropolate Fock matrix
-    cdiis.Push(fockVec, densVec); % density must be idempotent
-    adiis.Push(fockVec, densVec); % Fock must be built from idempotent density
+    cdiis.Push(fockVec, densKernelVec); % density must be idempotent
+    adiis.Push(fockVec, densKernelVec); % Fock must be built from idempotent density
     if(cdiis.IAmBetter())
         fockSimVec = cdiis.Extrapolate();
     else
@@ -43,7 +43,7 @@ end
 hfEnergy = elecEnergy + obj.nuclearRepulsionEnergy;
 
 obj.finalFockMat = reshape(fockSimVec, sqrt(length(fockSimVec)), []);
-obj.finalDensMat = reshape(densVec, sqrt(length(densVec)), []);
+obj.finalDensKernelMat = reshape(densKernelVec, sqrt(length(densKernelVec)), []);
 
 obj.hfEnergy = hfEnergy;
 obj.orbital = orbital;

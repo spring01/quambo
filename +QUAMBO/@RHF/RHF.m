@@ -10,7 +10,7 @@ classdef RHF < handle
         numElectrons;
         
         finalFockMat;
-        finalDensMat;
+        finalDensKernelMat;
         
         hfEnergy;
         orbital;
