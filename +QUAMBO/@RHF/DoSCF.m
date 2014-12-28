@@ -1,5 +1,5 @@
-function [orbital, orbitalEnergies, hfEnergy, iter] = SCF(obj)
-oeiVec = reshape(obj.kineticMat + obj.corePotentialMat, [], 1);
+function hfEnergy = DoSCF(obj)
+oeiVec = reshape(obj.kineticMat + sum(obj.potentialEachCoreMats,3), [], 1);
 teiForCoulomb = reshape(obj.twoElecIntegrals, length(oeiVec), []);
 teiForExchange = reshape(permute(obj.twoElecIntegrals, [1 3 2 4]), ...
     length(oeiVec), []);
@@ -40,6 +40,11 @@ for iter = 1:obj.maxSCFIter
         fockSimVec = adiis.Interpolate();
     end
 end
+
+if(iter >= obj.maxSCFIter)
+    disp('RHF.SCF(): Failed to converge.')
+end
+
 hfEnergy = elecEnergy + obj.nuclearRepulsionEnergy;
 
 obj.finalFockMat = reshape(fockSimVec, sqrt(length(fockSimVec)), []);

@@ -4,7 +4,7 @@ classdef RHF < handle
         
         overlapMat;
         kineticMat;
-        corePotentialMat;
+        potentialEachCoreMats;
         twoElecIntegrals;
         nuclearRepulsionEnergy;
         numElectrons;
@@ -32,7 +32,7 @@ classdef RHF < handle
         function obj = RHF(properties)
             obj.overlapMat = properties.overlapMat;
             obj.kineticMat = properties.kineticMat;
-            obj.corePotentialMat = properties.corePotentialMat;
+            obj.potentialEachCoreMats = properties.potentialEachCoreMats;
             obj.twoElecIntegrals = properties.twoElecIntegrals;
             obj.nuclearRepulsionEnergy = properties.nuclearRepulsionEnergy;
             obj.numElectrons = properties.numElectrons;
@@ -45,7 +45,7 @@ classdef RHF < handle
         function properties = MatPsi2Interface(matpsi2)
             properties.overlapMat = matpsi2.Integrals_Overlap();
             properties.kineticMat = matpsi2.Integrals_Kinetic();
-            properties.corePotentialMat = matpsi2.Integrals_Potential();
+            properties.potentialEachCoreMats = matpsi2.Integrals_PotentialEachCore();
             properties.twoElecIntegrals = matpsi2.Integrals_AllTEIs();
             properties.nuclearRepulsionEnergy = matpsi2.Molecule_NuclearRepulsionEnergy();
             properties.numElectrons = matpsi2.Molecule_NumElectrons();

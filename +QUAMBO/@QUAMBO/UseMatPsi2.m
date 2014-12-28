@@ -6,7 +6,7 @@ if(matpsi2AO.BasisSet_NumFunctions() > 150)
 end
 
 matpsi2AO.RHF_DoSCF();
-matpsi2AOandAMBO = MatPsi2(molStr, basisSetAOandAMBO, 0, 1, [pwd, '/+QUAMBO']);
+matpsi2AOandAMBO = MatPsi2(molStr, basisSetAOandAMBO, 0, 1, [pwd(), '/+QUAMBO']);
 
 properties.numElectrons = matpsi2AO.Molecule_NumElectrons();
 properties.numAOs = matpsi2AO.BasisSet_NumFunctions();
