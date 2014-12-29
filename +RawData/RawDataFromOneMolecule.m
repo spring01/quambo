@@ -48,29 +48,27 @@ basisFunctions = {};
 for iAtom = 1:size(mol.cartesian,1)
     properties.atomicNumber = mol.cartesian(iAtom,1);
     properties.centerXYZ = mol.cartesian(iAtom,2:end);
-    if(properties.atomicNumber <= 2) % >=1st row, push 1s
+    basisFunctions{end+1} = ... % always push 1s
+        BasisFunction(Properties1s(properties)); %#ok
+    if(properties.atomicNumber > 2) % >=2nd row, push 2s 2px 2py 2pz
         basisFunctions{end+1} = ...
-            BasisFunction(Properties1s(properties)); %#ok 1s
+            BasisFunction(Properties2s(properties)); %#ok
+        basisFunctions{end+1} = ...
+            BasisFunction(Properties2px(properties)); %#ok
+        basisFunctions{end+1} = ...
+            BasisFunction(Properties2py(properties)); %#ok
+        basisFunctions{end+1} = ...
+            BasisFunction(Properties2pz(properties)); %#ok
     end
-    if(properties.atomicNumber <= 10) % >=2nd row, push 2s 2px 2py 2pz
+    if(properties.atomicNumber > 10) % >=3rd row, push 3s 3px 3py 3pz
         basisFunctions{end+1} = ...
-            BasisFunction(Properties2s(properties)); %#ok 2s
+            BasisFunction(Properties3s(properties)); %#ok
         basisFunctions{end+1} = ...
-            BasisFunction(Properties2px(properties)); %#ok 2px
+            BasisFunction(Properties3px(properties)); %#ok
         basisFunctions{end+1} = ...
-            BasisFunction(Properties2py(properties)); %#ok 2py
+            BasisFunction(Properties3py(properties)); %#ok
         basisFunctions{end+1} = ...
-            BasisFunction(Properties2pz(properties)); %#ok 2pz
-    end
-    if(properties.atomicNumber <= 18) % >=3rd row, push 3s 3px 3py 3pz
-        basisFunctions{end+1} = ...
-            BasisFunction(Properties3s(properties)); %#ok 3s
-        basisFunctions{end+1} = ...
-            BasisFunction(Properties3px(properties)); %#ok 3px
-        basisFunctions{end+1} = ...
-            BasisFunction(Properties3py(properties)); %#ok 3py
-        basisFunctions{end+1} = ...
-            BasisFunction(Properties3pz(properties)); %#ok 3pz
+            BasisFunction(Properties3pz(properties)); %#ok
     end
     if(properties.atomicNumber > 18)
         throw(MException('BasisSet:BasisSet','Atomic number too large.'));
