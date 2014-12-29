@@ -12,20 +12,20 @@ classdef RawDataFromOneMolecule < handle
     
     methods
         
-        function obj = RawDataFromOneMolecule(mol, basisSetNames)
+        function obj = RawDataFromOneMolecule(molecule, basisSetNames)
             packagePath = what('RawData');
             packagePath = packagePath.path;
             import RawData.*;
             
-            obj.molecule = mol;
+            obj.molecule = molecule;
             
-            molStr = mol.MoleculeString();
+            molStr = molecule.MoleculeString();
             basisSetMin = basisSetNames.minimalBasisSet;
             basisSetLarge = basisSetNames.largeBasisSet;
             basisSetLargeAndMin = [basisSetLarge, '_and_', basisSetMin];
             
             % Basis functions
-            obj.basisFunctions = CellOfBasisFunctions(mol);
+            obj.basisFunctions = CellOfBasisFunctions(molecule);
             
             % Minimal basis RHF
             matpsi2MBS = MatPsi2(molStr, basisSetMin, 0,1,packagePath);
