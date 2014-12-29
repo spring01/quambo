@@ -1,4 +1,7 @@
 function properties = UseMatPsi2(molStr, basisSetAO, basisSetAOandAMBO)
+packagePath = what('RawData');
+packagePath = packagePath.path;
+
 matpsi2AO = MatPsi2(molStr, basisSetAO);
 
 if(matpsi2AO.BasisSet_NumFunctions() > 150)
@@ -6,16 +9,16 @@ if(matpsi2AO.BasisSet_NumFunctions() > 150)
 end
 
 matpsi2AO.RHF_DoSCF();
-matpsi2AOandAMBO = MatPsi2(molStr, basisSetAOandAMBO, 0, 1, [pwd(), '/+QUAMBO']);
+matpsi2AOandAMBO = MatPsi2(molStr, basisSetAOandAMBO, 0, 1, packagePath);
 
 properties.numElectrons = matpsi2AO.Molecule_NumElectrons();
-properties.numAOs = matpsi2AO.BasisSet_NumFunctions();
-properties.numAMBOs = matpsi2AOandAMBO.BasisSet_NumFunctions() - properties.numAOs;
 properties.AOtoMO = matpsi2AO.RHF_Orbital();
 
 atomicNumbers = matpsi2AO.Molecule_AtomicNumbers();
-centerNumFunctionsAO = CenterNumFunctions(atomicNumbers, matpsi2AO.BasisSet_FunctionToCenter());
-centerNumFunctionsAMBO = CenterNumFunctions(atomicNumbers, matpsi2AOandAMBO.BasisSet_FunctionToCenter()) ...
+centerNumFunctionsAO = ...
+    CenterNumFunctions(atomicNumbers, matpsi2AO.BasisSet_FunctionToCenter());
+centerNumFunctionsAMBO = ...
+    CenterNumFunctions(atomicNumbers, matpsi2AOandAMBO.BasisSet_FunctionToCenter()) ...
     - centerNumFunctionsAO;
 [indAOs, indAMBOs] = RangeAOandAMBO(atomicNumbers, centerNumFunctionsAO, centerNumFunctionsAMBO);
 overlapAOandAMBO = matpsi2AOandAMBO.Integrals_Overlap();

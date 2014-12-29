@@ -1,10 +1,10 @@
-classdef DataFromOneMolecule < handle
+classdef RawDataFromOneMolecule < handle
     
     properties (SetAccess = private)
         
         molecule;
         
-        cellOfBasisFunctions;
+        basisFunctions;
         rhfMBS;
         quambo;
         
@@ -12,62 +12,64 @@ classdef DataFromOneMolecule < handle
     
     methods
         
-        function obj = DataFromOneMolecule(mol, basisSetNames)
-            import QUAMBO.*;
+        function obj = RawDataFromOneMolecule(mol, basisSetNames)
+            packagePath = what('RawData');
+            packagePath = packagePath.path;
+            import RawData.*;
             
             obj.molecule = mol;
             
             molStr = mol.MoleculeString();
-            basisSetMin = basisSetNames.nameMinimalBasisSet;
-            basisSetLarge = basisSetNames.LargeBasisSet;
+            basisSetMin = basisSetNames.minimalBasisSet;
+            basisSetLarge = basisSetNames.largeBasisSet;
             basisSetLargeAndMin = [basisSetLarge, '_and_', basisSetMin];
             
             % Basis functions
-            obj.cellOfBasisFunctions = CellOfBasisFunctions(mol);
+            obj.basisFunctions = CellOfBasisFunctions(mol);
             
             % Minimal basis RHF
-            matpsi2MBS = MatPsi2(molStr, basisSetMin, 0, 1, [pwd(), '/+QUAMBO']);
+            matpsi2MBS = MatPsi2(molStr, basisSetMin, 0,1,packagePath);
             obj.rhfMBS = RHF(RHF.MatPsi2Interface(matpsi2MBS));
             obj.rhfMBS.DoSCF();
             
             % QUAMBO
-            obj.quambo = QUAMBO( ...
-                QUAMBO.UseMatPsi2(molStr, basisSetLarge, basisSetLargeAndMin));
+            obj.quambo = QUAMBO(QUAMBO.UseMatPsi2( ...
+                molStr, basisSetLarge, basisSetLargeAndMin));
         end
         
     end
     
 end
 
-function cellOfBasisFunctions = CellOfBasisFunctions(mol)
-import QUAMBO.BasisFunction;
+function basisFunctions = CellOfBasisFunctions(mol)
+import RawData.BasisFunction;
 
-cellOfBasisFunctions = {};
+basisFunctions = {};
 for iAtom = 1:size(mol.cartesian,1)
     properties.atomicNumber = mol.cartesian(iAtom,1);
     properties.centerXYZ = mol.cartesian(iAtom,2:end);
     if(properties.atomicNumber <= 2) % >=1st row, push 1s
-        cellOfBasisFunctions{end+1} = ...
+        basisFunctions{end+1} = ...
             BasisFunction(Properties1s(properties)); %#ok 1s
     end
     if(properties.atomicNumber <= 10) % >=2nd row, push 2s 2px 2py 2pz
-        cellOfBasisFunctions{end+1} = ...
+        basisFunctions{end+1} = ...
             BasisFunction(Properties2s(properties)); %#ok 2s
-        cellOfBasisFunctions{end+1} = ...
+        basisFunctions{end+1} = ...
             BasisFunction(Properties2px(properties)); %#ok 2px
-        cellOfBasisFunctions{end+1} = ...
+        basisFunctions{end+1} = ...
             BasisFunction(Properties2py(properties)); %#ok 2py
-        cellOfBasisFunctions{end+1} = ...
+        basisFunctions{end+1} = ...
             BasisFunction(Properties2pz(properties)); %#ok 2pz
     end
     if(properties.atomicNumber <= 18) % >=3rd row, push 3s 3px 3py 3pz
-        cellOfBasisFunctions{end+1} = ...
+        basisFunctions{end+1} = ...
             BasisFunction(Properties3s(properties)); %#ok 3s
-        cellOfBasisFunctions{end+1} = ...
+        basisFunctions{end+1} = ...
             BasisFunction(Properties3px(properties)); %#ok 3px
-        cellOfBasisFunctions{end+1} = ...
+        basisFunctions{end+1} = ...
             BasisFunction(Properties3py(properties)); %#ok 3py
-        cellOfBasisFunctions{end+1} = ...
+        basisFunctions{end+1} = ...
             BasisFunction(Properties3pz(properties)); %#ok 3pz
     end
     if(properties.atomicNumber > 18)

@@ -9,8 +9,8 @@ densKernelVec = zeros(size(oeiVec));
 elecEnergy = 0;
 
 % diis adiis
-cdiis = QUAMBO.CDIIS(obj.overlapMat);
-adiis = QUAMBO.ADIIS(oeiVec);
+cdiis = RawData.CDIIS(obj.overlapMat);
+adiis = RawData.ADIIS(oeiVec);
 
 fockVec = oeiVec;
 fockSimVec = fockVec;
