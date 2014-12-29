@@ -68,7 +68,11 @@ for iAtom = 1:numAtoms
         
         [~, sortedInds] = sort(distMat(iAtom, :));
         sortedInds = sortedInds(sortedInds~=jAtom);
-        kPos = cartesian(sortedInds(2), 2:end); % closest atom to i except j
+        if(length(sortedInds) >= 2)
+            kPos = cartesian(sortedInds(2), 2:end); % closest atom to i except j
+        else
+            kPos = rand(1, 3);
+        end
         
         bondVec = jPos - iPos;
         planeNormVec = cross(bondVec, kPos - iPos);

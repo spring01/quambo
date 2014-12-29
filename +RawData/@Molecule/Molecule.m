@@ -26,6 +26,7 @@ classdef Molecule < handle
             end
             exception = MException('Molecule:Molecule','Input format wrong.');
             if(ischar(arg1)) % string
+                arg1 = [arg1, char(10)];
                 arg1 = obj.ReplaceDelimitersWithSemicolon(arg1);
                 firstLine = regexp(arg1, '(.+?);', 'match', 'once');
                 firstLine = obj.ReplaceAtomicSymbolsWithAtomicNumbers(firstLine);
