@@ -1,6 +1,9 @@
 function Plot(obj)
 
+% matrix "cartesian" is all we need
 cartesian = obj.cartesian;
+
+% Determine bonds
 bonds = Bonds(cartesian);
 
 % A figure with white background and 3-d view
@@ -81,6 +84,9 @@ for iAtom = 1:numAtoms
             planeNormVec(2)*bondVec(3) - bondVec(2)*planeNormVec(3), ...
             bondVec(3)*temp + planeNormVec(3)*bondVec(1), ...
             -bondVec(2)*temp - planeNormVec(2)*bondVec(1)];
+        if(~sum(abs(normVec)))
+            normVec = rand(1, 3);
+        end
         normVec = normVec ./ norm(normVec);
         shifts = 0.05 .* [normVec; normVec];
         ijVecs = [iPos; jPos];
@@ -92,8 +98,8 @@ for iAtom = 1:numAtoms
                 bonds{end+1} = ijVecs + shifts; %#ok
             case(3)% triple bond
                 bonds{end+1} = ijVecs; %#ok
-                bonds{end+1} = ijVecs - shifts; %#ok
-                bonds{end+1} = ijVecs + shifts; %#ok
+                bonds{end+1} = ijVecs - 2*shifts; %#ok
+                bonds{end+1} = ijVecs + 2*shifts; %#ok
         end
     end
 end
