@@ -14,32 +14,55 @@ classdef QUAMBO < handle
     methods
         
         function obj = QUAMBO(properties)
-            MOtoQUAMBO = obj.CalculateMOtoQUAMBO(properties.AOtoMO, ...
-                properties.AOandAMBO, properties.numElectrons);
-            obj.AOtoQUAMBO = properties.AOtoMO * MOtoQUAMBO;                % <AO\MO><MO\QUAMBO> = <AO\QUAMBO>
+            
+            funcToCenter = properties.functionToCenterAMBO;
+            hamiltonianAMBO = properties.hamiltonianAMBO;
+            AOtoMO = properties.AOtoMO;
+            AOandAMBO = properties.AOandAMBO;
+            numElectrons = properties.numElectrons;
+            
+            overlapAO = properties.overlapAO;
+            kineticAO = properties.kineticAO;
+            potentialEachCoreAO = properties.potentialEachCoreAO;
+            
+            MOtoQUAMBO = obj.FindMOtoQUAMBO(AOtoMO, AOandAMBO, numElectrons);
+            MOtoQUAMBO = obj.SymmOrthoNShells(MOtoQUAMBO, funcToCenter);
+            AOtoQUAMBO_ = AOtoMO * MOtoQUAMBO;                               % <AO\MO><MO\QUAMBO> = <AO\QUAMBO>
+            
+            tempHamiltQUAMBO ...
+                = AOtoQUAMBO_' ...
+                * (kineticAO+sum(potentialEachCoreAO,3)) ...
+                * AOtoQUAMBO_;
+            invarTransQUAMBO = obj.InvariantTransform( ...
+                tempHamiltQUAMBO, hamiltonianAMBO, funcToCenter);
+            invarTransAMBO = obj.InvariantTransform( ...
+                hamiltonianAMBO, hamiltonianAMBO, funcToCenter);
+            
+            AOtoQUAMBO_ = AOtoQUAMBO_ * invarTransQUAMBO * invarTransAMBO';
             
             % integrals
-            obj.overlapQUAMBO = MOtoQUAMBO' * MOtoQUAMBO;
-            obj.kineticQUAMBO = ...
-                obj.AOtoQUAMBO' * properties.kineticAO * obj.AOtoQUAMBO;
+            obj.overlapQUAMBO = AOtoQUAMBO_' * overlapAO * AOtoQUAMBO_;
+            obj.kineticQUAMBO = AOtoQUAMBO_' * kineticAO * AOtoQUAMBO_;
             obj.potentialEachCoreQUAMBO = zeros( ...
                 [size(obj.kineticQUAMBO), ...
-                size(properties.potentialEachCoreAO, 3)]);
-            for iAtom = 1:size(properties.potentialEachCoreAO, 3)
+                size(potentialEachCoreAO, 3)]);
+            for iAtom = 1:size(potentialEachCoreAO, 3)
                 obj.potentialEachCoreQUAMBO(:,:,iAtom) ...
-                    = obj.AOtoQUAMBO' ...
-                    * properties.potentialEachCoreAO(:,:,iAtom) ...
-                    * obj.AOtoQUAMBO;
+                    = AOtoQUAMBO_' ...
+                    * potentialEachCoreAO(:,:,iAtom) ...
+                    * AOtoQUAMBO_;
             end
             obj.twoElecIntegralsQUAMBO = obj.TransformTensor4( ...
-                properties.twoElecIntegralsAO, obj.AOtoQUAMBO);
+                properties.twoElecIntegralsAO, AOtoQUAMBO_);
+            
+            obj.AOtoQUAMBO = AOtoQUAMBO_;
         end
         
     end
     
     methods (Access = private)
         
-        function MOtoQUAMBO = CalculateMOtoQUAMBO(~, AOtoMO, AOandAMBO, numElectrons)
+        function MOtoQUAMBO = FindMOtoQUAMBO(~, AOtoMO, AOandAMBO, numElectrons)
             numQUAMBOs = size(AOandAMBO, 2);
             numOccMOs = numElectrons / 2;
             numVirMOs = size(AOandAMBO, 1) - numOccMOs;
@@ -63,6 +86,105 @@ classdef QUAMBO < handle
             VirMOtoQUAMBO = repmat(sumMOtoAMBOsq.^-0.5,numVirMOs,1) ...
                 .* (VirMOtoSigVirMO*SigVirMOtoAMBO);                        % <VirMO\QUAMBO> ~ <VirMO\SigVirMO><SigVirMO|AMBO>
             MOtoQUAMBO = [OccMOtoQUAMBO; VirMOtoQUAMBO];
+        end
+        
+        function MOtoQUAMBO = SymmOrthoNShells(~, MOtoQUAMBO, funcToCenter)
+            tempOverlap = MOtoQUAMBO' * MOtoQUAMBO;
+            for iAtom = unique(funcToCenter)
+                funcs = find(funcToCenter==iAtom);
+                if(length(funcs) > 1) % orthogonalize 2s+2p
+                    MOtoQUAMBO(:,funcs(2:5)) = MOtoQUAMBO(:,funcs(2:5)) ...
+                        / sqrtm(tempOverlap(funcs(2:5),funcs(2:5)));
+                end
+                if(length(funcs) > 5) % orthogonalize 3s+3p
+                    MOtoQUAMBO(:,funcs(6:9)) = MOtoQUAMBO(:,funcs(6:9)) ...
+                        / sqrtm(tempOverlap(funcs(6:9),funcs(6:9)));
+                end
+                if(length(funcs) > 9)
+                    throw(MException('QUAMBO:SymmOrthoNShells' , ...
+                        'Cannot handle 4th(+) row elements.'));
+                end
+            end
+        end
+        
+        function trans = ...
+                InvariantTransform(~, hamilt, hamiltForVecs, funcToCenter)
+            trans = eye(size(hamiltForVecs));
+            for iAtom = unique(funcToCenter)
+                funcs = find(funcToCenter==iAtom);
+                if(length(funcs) > 1) % orthogonalize 2s+2p
+                    [vec, ~] = eig(hamiltForVecs(funcs(3:5),funcs(3:5)));
+                    trans(:,funcs(3:5)) = trans(:,funcs(3:5)) * vec;
+                end
+                if(length(funcs) > 5) % orthogonalize 3s+3p
+                    [vec, ~] = eig(hamiltForVecs(funcs(7:9),funcs(7:9)));
+                    trans(:,funcs(7:9)) = trans(:,funcs(7:9)) * vec;
+                end
+                if(length(funcs) > 9)
+                    throw(MException('QUAMBO:SymmOrthoNShells' , ...
+                        'Cannot handle 4th(+) row elements.'));
+                end
+            end
+            invarHamilton = trans' * hamilt * trans;
+            
+            
+            firstHeavyZFound = false;
+            firstHydrogenFound = false;
+            for iAtom = unique(funcToCenter)
+                funcs = find(funcToCenter==iAtom);
+                if(length(funcs) > 1) % orthogonalize 2s+2p
+                    if(~firstHeavyZFound)
+                        firstHeavyZFound = true;
+                        firstHeavyZOrbital = funcs(5);
+                        firstHeavyAtomIndex = iAtom;
+                    end
+                    if(invarHamilton(funcs(3), funcs(2)) > 0)
+                        trans(:,funcs(3)) = -trans(:,funcs(3));
+                    end
+                    if(invarHamilton(funcs(4), funcs(2)) > 0)
+                        trans(:,funcs(4)) = -trans(:,funcs(4));
+                    end
+                else
+                    if(~firstHydrogenFound)
+                        firstHydrogenFound = true;
+                        firstHydrogenOrbital = funcs;
+                    end
+                end
+                if(length(funcs) > 5) % orthogonalize 3s+3p
+                    if(invarHamilton(funcs(7), funcs(6)) > 0)
+                        trans(:,funcs(7)) = -trans(:,funcs(7));
+                    end
+                    if(invarHamilton(funcs(8), funcs(6)) > 0)
+                        trans(:,funcs(8)) = -trans(:,funcs(8));
+                    end
+                end
+            end
+            
+            
+            if(invarHamilton(firstHeavyZOrbital, firstHydrogenOrbital) > 0)
+                trans(:,firstHeavyZOrbital) = -trans(:,firstHeavyZOrbital);
+            end
+            invarHamilton = trans' * hamilt * trans;
+            
+            refHeavyZOrbital = firstHeavyZOrbital;
+            allAtoms = unique(funcToCenter);
+            for iAtom = allAtoms(allAtoms~=firstHeavyAtomIndex)
+                funcs = find(funcToCenter==iAtom);
+                if(length(funcs) > 1) % orthogonalize 2s+2p
+                    if(invarHamilton(funcs(5), refHeavyZOrbital) > 0)
+                        trans(:,funcs(5)) = -trans(:,funcs(5));
+                        invarHamilton = trans' * hamilt * trans;
+                    end
+                    refHeavyZOrbital = funcs(5);
+                end
+                if(length(funcs) > 5) % orthogonalize 3s+3p
+                    if(invarHamilton(funcs(9), refHeavyZOrbital) > 0)
+                        trans(:,funcs(9)) = -trans(:,funcs(9));
+                        invarHamilton = trans' * hamilt * trans;
+                    end
+                    refHeavyZOrbital = funcs(9);
+                end
+            end
         end
         
         function tensor4 = TransformTensor4(~, tensor4, trans)
@@ -97,7 +219,7 @@ classdef QUAMBO < handle
     
     methods (Static)
         
-        properties_ = UseMatPsi2(molStr, basisSetAO, basisSetAOandAMBO, packageLocation);
+        properties_ = UseMatPsi2(molStr, basisSetAO, basisSetAOandAMBO);
         
     end
     

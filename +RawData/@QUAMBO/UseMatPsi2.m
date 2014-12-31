@@ -20,13 +20,21 @@ centerNumFunctionsAO = ...
 centerNumFunctionsAMBO = ...
     CenterNumFunctions(atomicNumbers, matpsi2AOandAMBO.BasisSet_FunctionToCenter()) ...
     - centerNumFunctionsAO;
-[indAOs, indAMBOs] = RangeAOandAMBO(atomicNumbers, centerNumFunctionsAO, centerNumFunctionsAMBO);
+[indAOs, indAMBOs] = IndicesAOandAMBO(atomicNumbers, centerNumFunctionsAO, centerNumFunctionsAMBO);
 overlapAOandAMBO = matpsi2AOandAMBO.Integrals_Overlap();
 properties.AOandAMBO = overlapAOandAMBO(indAOs, indAMBOs);
 
+properties.overlapAO = overlapAOandAMBO(indAOs,indAOs);
 properties.kineticAO = matpsi2AO.Integrals_Kinetic();
 properties.potentialEachCoreAO = matpsi2AO.Integrals_PotentialEachCore();
 properties.twoElecIntegralsAO = matpsi2AO.Integrals_AllTEIs();
+
+functionToCenterAOandAMBO = matpsi2AOandAMBO.BasisSet_FunctionToCenter();
+properties.functionToCenterAMBO = functionToCenterAOandAMBO(indAMBOs);
+
+hamiltonianAOandAMBO = matpsi2AOandAMBO.Integrals_Kinetic() + matpsi2AOandAMBO.Integrals_Potential();
+properties.hamiltonianAMBO = hamiltonianAOandAMBO(indAMBOs,indAMBOs);
+
 end
 
 function centerNumFunctions = CenterNumFunctions(atomicNumbers, funcToCenter)
@@ -36,7 +44,7 @@ for iatom = 1:length(atomicNumbers)
 end
 end
 
-function [indAOs, indAMBOs] = RangeAOandAMBO(atomicNumbers, centerNumFunctionsAO, centerNumFunctionsAMBO)
+function [indAOs, indAMBOs] = IndicesAOandAMBO(atomicNumbers, centerNumFunctionsAO, centerNumFunctionsAMBO)
 indAOs = [];
 indAMBOs = [];
 pointer = 1;
