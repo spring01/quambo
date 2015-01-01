@@ -125,8 +125,7 @@ classdef QUAMBO < handle
                         'Cannot handle 4th(+) row elements.'));
                 end
             end
-            invarHamilton = trans' * hamilt * trans;
-            
+            invarHamilt = trans' * hamilt * trans;
             
             firstHeavyZFound = false;
             firstHydrogenFound = false;
@@ -138,10 +137,10 @@ classdef QUAMBO < handle
                         firstHeavyZOrbital = funcs(5);
                         firstHeavyAtomIndex = iAtom;
                     end
-                    if(invarHamilton(funcs(3), funcs(2)) > 0)
+                    if(invarHamilt(funcs(3), funcs(2)) > 0)
                         trans(:,funcs(3)) = -trans(:,funcs(3));
                     end
-                    if(invarHamilton(funcs(4), funcs(2)) > 0)
+                    if(invarHamilt(funcs(4), funcs(2)) > 0)
                         trans(:,funcs(4)) = -trans(:,funcs(4));
                     end
                 else
@@ -151,36 +150,35 @@ classdef QUAMBO < handle
                     end
                 end
                 if(length(funcs) > 5) % orthogonalize 3s+3p
-                    if(invarHamilton(funcs(7), funcs(6)) > 0)
+                    if(invarHamilt(funcs(7), funcs(6)) > 0)
                         trans(:,funcs(7)) = -trans(:,funcs(7));
                     end
-                    if(invarHamilton(funcs(8), funcs(6)) > 0)
+                    if(invarHamilt(funcs(8), funcs(6)) > 0)
                         trans(:,funcs(8)) = -trans(:,funcs(8));
                     end
                 end
             end
             
-            
-            if(invarHamilton(firstHeavyZOrbital, firstHydrogenOrbital) > 0)
+            if(invarHamilt(firstHeavyZOrbital, firstHydrogenOrbital) > 0)
                 trans(:,firstHeavyZOrbital) = -trans(:,firstHeavyZOrbital);
             end
-            invarHamilton = trans' * hamilt * trans;
+            invarHamilt = trans' * hamilt * trans;
             
             refHeavyZOrbital = firstHeavyZOrbital;
             allAtoms = unique(funcToCenter);
             for iAtom = allAtoms(allAtoms~=firstHeavyAtomIndex)
                 funcs = find(funcToCenter==iAtom);
                 if(length(funcs) > 1) % orthogonalize 2s+2p
-                    if(invarHamilton(funcs(5), refHeavyZOrbital) > 0)
+                    if(invarHamilt(funcs(5), refHeavyZOrbital) > 0)
                         trans(:,funcs(5)) = -trans(:,funcs(5));
-                        invarHamilton = trans' * hamilt * trans;
+                        invarHamilt = trans' * hamilt * trans;
                     end
                     refHeavyZOrbital = funcs(5);
                 end
                 if(length(funcs) > 5) % orthogonalize 3s+3p
-                    if(invarHamilton(funcs(9), refHeavyZOrbital) > 0)
+                    if(invarHamilt(funcs(9), refHeavyZOrbital) > 0)
                         trans(:,funcs(9)) = -trans(:,funcs(9));
-                        invarHamilton = trans' * hamilt * trans;
+                        invarHamilt = trans' * hamilt * trans;
                     end
                     refHeavyZOrbital = funcs(9);
                 end
