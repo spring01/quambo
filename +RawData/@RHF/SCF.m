@@ -1,4 +1,4 @@
-function hfEnergy = DoSCF(obj)
+function hfEnergy = SCF(obj)
 oeiVec = reshape(obj.kineticMat + sum(obj.potentialEachCoreMats,3), [], 1);
 teiForCoulomb = reshape(obj.twoElecIntegrals, length(oeiVec), []);
 teiForExchange = reshape(permute(obj.twoElecIntegrals, [1 3 2 4]), ...
@@ -14,11 +14,12 @@ adiis = RawData.ADIIS(oeiVec);
 
 fockVec = oeiVec;
 fockSimVec = fockVec;
+nbf = size(obj.kineticMat, 1);
 for iter = 1:obj.maxSCFIter
     oldDensVec = densKernelVec;
     oldElecEnergy = elecEnergy;
     [densKernelVec, elecEnergy, orbital, orbitalEnergies] ...
-        = DiagonalizeFock(reshape(fockSimVec, sqrt(length(fockSimVec)), []), ...
+        = DiagonalizeFock(reshape(fockSimVec, nbf, []), ...
         inv_S_Half, obj.numElectrons);
     elecEnergy = oeiVec'*densKernelVec + elecEnergy;
     
@@ -42,13 +43,13 @@ for iter = 1:obj.maxSCFIter
 end
 
 if(iter >= obj.maxSCFIter)
-    disp('RHF.SCF(): Failed to converge.')
+    disp('RHF.DoSCF(): Failed to converge.')
 end
 
 hfEnergy = elecEnergy + obj.nuclearRepulsionEnergy;
 
-obj.finalFockMat = reshape(fockSimVec, sqrt(length(fockSimVec)), []);
-obj.finalDensKernelMat = reshape(densKernelVec, sqrt(length(densKernelVec)), []);
+obj.finalFockMat = reshape(fockSimVec, nbf, []);
+obj.finalDensKernelMat = reshape(densKernelVec, nbf, []);
 
 obj.hfEnergy = hfEnergy;
 obj.orbital = orbital;

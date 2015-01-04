@@ -9,6 +9,8 @@ classdef QUAMBO < handle
         potentialEachCoreQUAMBO;
         twoElecIntegralsQUAMBO;
         
+        mnATensorQUAMBO;
+        
     end
     
     methods
@@ -54,6 +56,8 @@ classdef QUAMBO < handle
             end
             obj.twoElecIntegralsQUAMBO = obj.TransformTensor4( ...
                 properties.twoElecIntegralsAO, AOtoQUAMBO_);
+            obj.mnATensorQUAMBO = obj.TransformDFTensor( ...
+                properties.mnATensorAO, AOtoQUAMBO_);
             
             obj.AOtoQUAMBO = AOtoQUAMBO_;
         end
@@ -211,6 +215,24 @@ classdef QUAMBO < handle
             % ijks -> ijkl
             tensor4 = reshape(tensor4, [],nbf1) * trans;
             tensor4 = reshape(tensor4, nbf2,nbf2,nbf2,nbf2);
+        end
+        
+        function dfTensor = TransformDFTensor(~, dfTensor, trans)
+            nbf1 = size(trans, 1);
+            nbf2 = size(trans, 2);
+            naux = size(dfTensor, 3);
+            
+            % mnA -> inA
+            dfTensor = reshape( ...
+                trans' * reshape(dfTensor, nbf1,[]) ...
+                , nbf2,nbf1,naux);
+            
+            % inA -> ijA
+            dfTensor = permute(dfTensor,[2 1 3]);
+            dfTensor = trans' * reshape(dfTensor, nbf1,[]);
+            dfTensor = permute( ...
+                reshape(dfTensor, nbf2,nbf2,naux) ...
+                , [2 1 3]);
         end
 
     end

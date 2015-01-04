@@ -5,7 +5,9 @@ classdef RawDataFromOneMolecule < handle
         molecule;
         
         basisFunctions;
-        rhfMBS;
+        rhfAMBO;
+        rhfAO;
+        
         quambo;
         
     end
@@ -20,21 +22,23 @@ classdef RawDataFromOneMolecule < handle
             obj.molecule = molecule;
             
             molStr = molecule.MoleculeString();
-            basisSetMin = basisSetNames.minimalBasisSet;
-            basisSetLarge = basisSetNames.largeBasisSet;
-            basisSetLargeAndMin = [basisSetLarge, '_and_', basisSetMin];
+            basisSetAO = basisSetNames.basisSetAO;
+            basisSetAMBO = basisSetNames.basisSetAMBO;
+            auxiliaryBasisSet = basisSetNames.auxiliaryBasisSet;
             
             % Basis functions
             obj.basisFunctions = CellOfBasisFunctions(molecule);
             
             % Minimal basis RHF
-            matpsi2MBS = MatPsi2(molStr, basisSetMin, 0,1,packagePath);
-            obj.rhfMBS = RHF(RHF.MatPsi2Interface(matpsi2MBS));
-            obj.rhfMBS.DoSCF();
+            matpsi2AMBO = MatPsi2(molStr, basisSetAMBO, 0,1,packagePath);
+            matpsi2AMBO.JK_Initialize('DFJK', auxiliaryBasisSet);
+            obj.rhfAMBO = RHF(RHF.MatPsi2Interface(matpsi2AMBO));
+            matpsi2AO = MatPsi2(molStr, basisSetAO);
+            matpsi2AO.JK_Initialize('DFJK', auxiliaryBasisSet);
+            obj.rhfAO = RHF(RHF.MatPsi2Interface(matpsi2AO));
             
             % QUAMBO
-            obj.quambo = QUAMBO(QUAMBO.UseMatPsi2( ...
-                molStr, basisSetLarge, basisSetLargeAndMin));
+            obj.quambo = QUAMBO(QUAMBO.UseMatPsi2(molStr, basisSetNames));
         end
         
     end

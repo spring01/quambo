@@ -51,8 +51,9 @@ for attempt = 1:2
         mol = Molecule(cartesian);
     end
     
-    basisSetNames.minimalBasisSet = 'sto-3g-cartesian';
-    basisSetNames.largeBasisSet = '6-31gs';
+    basisSetNames.basisSetAMBO = 'sto-3g-cartesian';
+    basisSetNames.basisSetAO = '6-31gs';
+    basisSetNames.auxiliaryBasisSet = 'cc-pvdz-jkfit';
     data1mol = RawDataFromOneMolecule(mol, basisSetNames);
     
     mp = MatPsi2(mol.MoleculeString, '6-31gs');

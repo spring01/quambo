@@ -1,6 +1,10 @@
-function properties = UseMatPsi2(molStr, basisSetAO, basisSetAOandAMBO)
+function properties = UseMatPsi2(molStr, basisSetNames)
 packagePath = what('RawData');
 packagePath = packagePath.path;
+
+basisSetAO = basisSetNames.basisSetAO;
+basisSetAOandAMBO = [basisSetNames.basisSetAO, '_and_', basisSetNames.basisSetAMBO];
+auxiliaryBasisSet = basisSetNames.auxiliaryBasisSet;
 
 matpsi2AO = MatPsi2(molStr, basisSetAO);
 
@@ -28,6 +32,8 @@ properties.overlapAO = overlapAOandAMBO(indAOs,indAOs);
 properties.kineticAO = matpsi2AO.Integrals_Kinetic();
 properties.potentialEachCoreAO = matpsi2AO.Integrals_PotentialEachCore();
 properties.twoElecIntegralsAO = matpsi2AO.Integrals_AllTEIs();
+matpsi2AO.JK_Initialize('DFJK', auxiliaryBasisSet);
+properties.mnATensorAO = matpsi2AO.DFJK_mnATensorFull();
 
 functionToCenterAOandAMBO = matpsi2AOandAMBO.BasisSet_FunctionToCenter();
 properties.functionToCenterAMBO = functionToCenterAOandAMBO(indAMBOs);
