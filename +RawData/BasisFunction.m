@@ -5,7 +5,7 @@ classdef BasisFunction < handle
         atomicNumber; % Z
         centerXYZ; % [x y z]
         
-        principleQNum; % n
+        principalQNum; % n
         angularQNum; % l
         cartesianQNum; % lc: cartesian version of lz; x->1, y->2, z->3
         
@@ -13,12 +13,12 @@ classdef BasisFunction < handle
     
     methods
         
-        function obj = BasisFunction(properties)
-            obj.atomicNumber = properties.atomicNumber;
-            obj.centerXYZ = properties.centerXYZ;
-            obj.principleQNum = properties.principleQNum;
-            obj.angularQNum = properties.angularQNum;
-            obj.cartesianQNum = properties.cartesianQNum;
+        function obj = BasisFunction(input)
+            obj.atomicNumber = input.atomicNumber;
+            obj.centerXYZ = input.centerXYZ;
+            obj.principalQNum = input.principalQNum;
+            obj.angularQNum = input.angularQNum;
+            obj.cartesianQNum = input.cartesianQNum;
         end
         
     end
