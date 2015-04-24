@@ -9,7 +9,7 @@ classdef FeatureLabelFockDiag < FeatureLabel.FeatureLabelBase
             obj.feature = obj.FeatureFockDiag(rawData1Mol, ind);
             
             % label
-            obj.label = rawData1Mol.mlHueckelTarget.fockMat(ind,ind);
+            obj.label = rawData1Mol.mltb.fockMat(ind,ind);
         end
         
     end

@@ -9,7 +9,7 @@ classdef FeatureLabelOverlapOffDiag < FeatureLabel.FeatureLabelBase
             obj.feature = obj.FeatureOverlapOffDiag(rawData1Mol, ind1, ind2);
             
             % label
-            obj.label = rawData1Mol.mlHueckelTarget.overlapMat(ind1,ind2);
+            obj.label = rawData1Mol.mltb.overlapMat(ind1,ind2);
         end
         
     end

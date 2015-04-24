@@ -1,20 +1,29 @@
-function input = UseMatPsi2(matpsi2AO, matpsi2AOandAMBO)
+function quambo = MatPsi2Interface(molecule, basisSetInfo)
+
+molCart = molecule.cartesian;
+basisSetAO = basisSetInfo.basisSetAO;
+basisSetAOandAMBO = [basisSetInfo.basisSetAO, '_and_', basisSetInfo.basisSetAMBO];
+matpsi2AO = MatPsi2(molCart, basisSetAO);
+matpsi2AO.SCF_RunRHF();
+matpsi2AOandAMBO = MatPsi2(molCart, basisSetAOandAMBO, 0, 1, basisSetInfo.path);
 
 input.numElectrons = matpsi2AO.Molecule_NumElectrons();
-input.AOtoMO = matpsi2AO.RHF_Orbital();
+input.AOtoMO = matpsi2AO.SCF_OrbitalAlpha();
 
 atomicNumbers = matpsi2AO.Molecule_AtomicNumbers();
 centerNumFunctionsAO = ...
-    CenterNumFunctions(atomicNumbers, matpsi2AO.BasisSet_FunctionToCenter());
+    CenterNumFunctions(atomicNumbers, matpsi2AO.BasisSet_FuncToCenter());
 centerNumFunctionsAMBO = ...
-    CenterNumFunctions(atomicNumbers, matpsi2AOandAMBO.BasisSet_FunctionToCenter()) ...
+    CenterNumFunctions(atomicNumbers, matpsi2AOandAMBO.BasisSet_FuncToCenter()) ...
     - centerNumFunctionsAO;
 [indAOs, indAMBOs] = IndicesAOandAMBO(atomicNumbers, centerNumFunctionsAO, centerNumFunctionsAMBO);
 overlapAOandAMBO = matpsi2AOandAMBO.Integrals_Overlap();
 input.AOandAMBO = overlapAOandAMBO(indAOs, indAMBOs);
 
-functionToCenterAOandAMBO = matpsi2AOandAMBO.BasisSet_FunctionToCenter();
-input.functionToCenterAMBO = functionToCenterAOandAMBO(indAMBOs);
+funcToCenterAOandAMBO = matpsi2AOandAMBO.BasisSet_FuncToCenter();
+input.funcToCenterAMBO = funcToCenterAOandAMBO(indAMBOs);
+
+quambo = QUAMBO(input);
 
 end
 

@@ -9,7 +9,7 @@ classdef FeatureLabelCoreHamiltOffDiag < FeatureLabel.FeatureLabelBase
             obj.feature = obj.FeatureCoreHamiltOffDiag(rawData1Mol, ind1, ind2);
             
             % label
-            obj.label = rawData1Mol.mlHueckelTarget.coreHamilt(ind1,ind2);
+            obj.label = rawData1Mol.mltb.coreHamilt(ind1,ind2);
         end
         
     end

@@ -6,7 +6,7 @@ classdef RawData1Mol < handle
         
         basisFunctions;
         
-        mlHueckelTarget;
+        mltb;
         
     end
     
@@ -19,24 +19,21 @@ classdef RawData1Mol < handle
             
             obj.basisFunctions = CellOfBasisFunctions(molecule);
             
-            molStr = molecule.MoleculeString();
             packagePath = what('RawData');
             packagePath = packagePath.path;
-            basisSetAO = basisSetNames.basisSetAO;
-            basisSetAOandAMBO = [basisSetNames.basisSetAO, '_and_', basisSetNames.basisSetAMBO];
-            matpsi2AO = MatPsi2(molStr, basisSetAO);
-            matpsi2AO.RHF_DoSCF();
-            matpsi2AOandAMBO = MatPsi2(molStr, basisSetAOandAMBO, 0, 1, packagePath);
+            basisSetInfo = basisSetNames;
+            basisSetInfo.path = packagePath;
             
             % QUAMBO
-            quambo = QUAMBO(QUAMBO.UseMatPsi2(matpsi2AO, matpsi2AOandAMBO));
+            [quambo, matpsi2AO] = QUAMBO.MatPsi2Interface(molecule, basisSetInfo);
             ao2quambo = quambo.AOtoQUAMBO;
+            
             input.numElectrons = matpsi2AO.Molecule_NumElectrons();
-            input.nucRepEnergy = matpsi2AO.Molecule_NuclearRepulsionEnergy();
+            input.nucRepEnergy = matpsi2AO.Molecule_NucRepEnergy();
             input.overlapMat = ao2quambo' * matpsi2AO.Integrals_Overlap() * ao2quambo;
-            input.coreHamilt = ao2quambo' * matpsi2AO.RHF_CoreHamiltonian() * ao2quambo;
-            input.fockMat = ao2quambo' * matpsi2AO.RHF_FockMatrix() * ao2quambo;
-            obj.mlHueckelTarget = MLHueckel(input);
+            input.coreHamilt = ao2quambo' * matpsi2AO.SCF_CoreHamiltonian() * ao2quambo;
+            input.fockMat = ao2quambo' * matpsi2AO.SCF_FockAlpha() * ao2quambo;
+            obj.mltb = MLTB(input);
         end
         
     end

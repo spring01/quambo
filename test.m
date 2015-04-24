@@ -10,20 +10,21 @@ inputMol = [...
     'H    1    1.08    2    105.0    3   -120.0', char(10), ...
     'H    2    1.08    1    105.0    3     60.0', char(10), ...
     'H    2    1.08    1    105.0    3    -60.0', char(10), ...
-    'F    2    1.48    1    105.0    3    180.0', char(10)];
+    'H    2    1.08    1    105.0    3    180.0', char(10)];
 
 mol = Molecule(inputMol);
 
 basisSetNames.basisSetAO = '6-31gs';
 basisSetNames.basisSetAMBO = 'sto-3g-cartesian';
 
+
 rawData1mol = RawData1Mol(mol, basisSetNames);
 
 
 
-mlh = rawData1mol.mlHueckelTarget;
-matpsiAO = MatPsi2(mol.MoleculeString(), basisSetNames.basisSetAO);
-matpsiAO.RHF_DoSCF();
+mltb = rawData1mol.mltb;
+matpsiAO = MatPsi2(mol.cartesian, basisSetNames.basisSetAO);
+matpsiAO.SCF_RunRHF();
 
 flo1 = FeatureLabelOverlapOffDiag(rawData1mol, 1,2);
 

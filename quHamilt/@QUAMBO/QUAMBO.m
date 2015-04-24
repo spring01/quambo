@@ -24,6 +24,20 @@ classdef QUAMBO < handle
             obj.AOtoQUAMBO = AOtoQUAMBO_;
         end
         
+        function newRHF = NewRHF(obj, rhf)
+            trans = obj.AOtoQUAMBO;
+            prop.overlapMat = trans' * rhf.overlapMat * trans;
+            prop.kineticMat = trans' * rhf.kineticMat * trans;
+            prop.corePotentialMats = zeros([size(prop.overlapMat), size(rhf.corePotentialMats,3)]);
+            for iatom = 1:size(prop.corePotentialMats,3)
+                prop.corePotentialMats(:,:,iatom) = trans' * rhf.corePotentialMats(:,:,iatom) * trans;
+            end
+            prop.twoElecIntegrals = TransformTensor4(rhf.twoElecIntegrals, trans);
+            prop.nucRepEnergy = rhf.nucRepEnergy;
+            prop.numElectrons = rhf.numElectrons;
+            newRHF = RHF(prop);
+        end
+        
     end
     
     methods (Access = private)
@@ -78,7 +92,7 @@ classdef QUAMBO < handle
     
     methods (Static)
         
-        [quambo, matpsi2AO] = MatPsi2Interface(matpsi2AO, matpsi2AMBO);
+        quambo = MatPsi2Interface(matpsi2AO, matpsi2AMBO);
         
     end
     
