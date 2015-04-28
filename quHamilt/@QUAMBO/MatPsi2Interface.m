@@ -1,6 +1,5 @@
-function quambo = MatPsi2Interface(molecule, basisSetInfo)
+function [quambo, matpsi2AO] = MatPsi2Interface(molCart, basisSetInfo)
 
-molCart = molecule.cartesian;
 basisSetAO = basisSetInfo.basisSetAO;
 basisSetAOandAMBO = [basisSetInfo.basisSetAO, '_and_', basisSetInfo.basisSetAMBO];
 matpsi2AO = MatPsi2(molCart, basisSetAO);

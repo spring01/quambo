@@ -25,7 +25,7 @@ classdef RawData1Mol < handle
             basisSetInfo.path = packagePath;
             
             % QUAMBO
-            [quambo, matpsi2AO] = QUAMBO.MatPsi2Interface(molecule, basisSetInfo);
+            [quambo, matpsi2AO] = QUAMBO.MatPsi2Interface(molecule.cartesian, basisSetInfo);
             ao2quambo = quambo.AOtoQUAMBO;
             
             input.numElectrons = matpsi2AO.Molecule_NumElectrons();

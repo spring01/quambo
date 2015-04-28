@@ -78,7 +78,7 @@ classdef QUAMBO < handle
     
     methods (Static)
         
-        [quambo, matpsi2AO] = MatPsi2Interface(matpsi2AO, matpsi2AMBO);
+        [quambo, matpsi2AO] = MatPsi2Interface(molecule, basisSetInfo);
         
     end
     

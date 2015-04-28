@@ -20,7 +20,7 @@ rhfhl = RHF.MatPsi2Interface(mphl);
 
 
 
-quambo = QUAMBO.MatPsi2Interface(mol, basisSetInfo);
+quambo = QUAMBO.MatPsi2Interface(mol.cartesian, basisSetInfo);
 rhfqu = quambo.NewRHF(rhfhl);
 rhfqu.SCF();
 
